@@ -1,0 +1,9 @@
+{
+  "services": [
+    { "name": "payments", "port": 4010 },
+    { "name": "identities", "port": 4011 },
+    { "name": "payment-indexing", "port": 4012 },
+    { "name": "secrets", "port": 4013 },
+    { "name": "invoices", "port": 4014 }
+  ]
+}
