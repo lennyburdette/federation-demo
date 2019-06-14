@@ -22,20 +22,13 @@ const typeDefs = gql`
     panFideliusToken: ID!
   }
 
-  interface Payment {
-    id: ID!
-    locationId: ID!
-    createdAt: String!
-    total: Money!
-  }
-
   enum CardPaymentStatus {
     PENDING
     SUCCESS
     DECLINED
   }
 
-  type CardPayment implements Payment @key(fields: "id locationId") {
+  type Payment @key(fields: "id locationId") {
     id: ID!
     locationId: ID!
     createdAt: String!
@@ -44,22 +37,9 @@ const typeDefs = gql`
     card: PaymentCard @provides(fields: "id maskedPan panFideliusToken")
   }
 
-  type CashPayment implements Payment @key(fields: "id locationId") {
-    id: ID!
-    locationId: ID!
-    createdAt: String!
-    total: Money!
-    change: Money!
-  }
-
   extend type Location @key(fields: "id") {
     id: ID! @external
-    payments(limit: Int, cursor: String): PaymentConnection!
-  }
-
-  type PaymentConnection {
-    nodes: [Payment!]!
-    cursor: String
+    payments: [Payment!]!
   }
 `;
 
@@ -69,33 +49,14 @@ const resolvers = {
       return payments.find(p => p.id === id);
     }
   },
-  // TODO: should we need these reference resolvers? It'd be nicer if it
-  // went to the Payment resolver, but the payment-indexing service needs
-  // to return a concrete object type for __typename so we'll enter the
-  // graph here.
-  CardPayment: {
-    __resolveReference(object) {
-      return payments.find(p => p.id === object.id);
-    }
-  },
-  CashPayment: {
-    __resolveReference(object) {
-      return payments.find(p => p.id === object.id);
-    }
-  },
   Payment: {
-    __resolveType({ type }) {
-      return type;
-    },
     __resolveReference(object) {
       return payments.find(p => p.id === object.id);
     }
   },
   Location: {
     payments(location, { limit, cursor }) {
-      return {
-        nodes: payments.filter(p => p.locationId === location.id)
-      };
+      return payments.filter(p => p.locationId === location.id);
     }
   }
 };
@@ -118,7 +79,6 @@ const payments = [
     id: "p1",
     locationId: "1a",
     createdAt: new Date().toString(),
-    type: "CardPayment",
     total: {
       amount: 123,
       currencyCode: "USD"
@@ -134,21 +94,21 @@ const payments = [
     id: "p2",
     locationId: "1a",
     createdAt: new Date().toString(),
-    type: "CashPayment",
     total: {
       amount: 499,
       currencyCode: "USD"
     },
-    change: {
-      amount: 1,
-      currencyCode: "USD"
+    status: "SUCCESS",
+    card: {
+      id: "c1",
+      maskedPan: "4•••1234",
+      panFideliusToken: "pan-fid-1"
     }
   },
   {
     id: "p3",
     locationId: "2a",
     createdAt: new Date().toString(),
-    type: "CardPayment",
     total: {
       amount: 234,
       currencyCode: "USD"
@@ -164,7 +124,6 @@ const payments = [
     id: "p4",
     locationId: "2a",
     createdAt: new Date().toString(),
-    type: "CardPayment",
     total: {
       amount: 234,
       currencyCode: "USD"

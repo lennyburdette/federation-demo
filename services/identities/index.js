@@ -34,17 +34,9 @@ const typeDefs = gql`
     cursor: String
   }
 
-  extend type CardPayment @key(fields: "id locationId") {
+  extend type Payment @key(fields: "id locationId") {
     id: ID! @external
     locationId: ID! @external
-    merchant: Merchant
-    location: Location
-  }
-
-  extend type CashPayment @key(fields: "id locationId") {
-    id: ID! @external
-    locationId: ID! @external
-    merchant: Merchant
     location: Location
   }
 `;
@@ -89,11 +81,6 @@ const resolvers = {
   Payment: {
     location(payment) {
       return locations.find(l => l.id === payment.locationId);
-    },
-    merchant(payment) {
-      return merchants.find(m =>
-        locations.find(l => l.id === payment.locationId).merchantId === m.id
-      );
     }
   }
 };

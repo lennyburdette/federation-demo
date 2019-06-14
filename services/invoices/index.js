@@ -28,13 +28,7 @@ const typeDefs = gql`
     invoiceSettings: InvoiceSettings
   }
 
-  extend type CardPayment @key(fields: "id locationId") {
-    id: ID! @external
-    locationId: ID! @external
-    invoice: Invoice
-  }
-
-  extend type CashPayment @key(fields: "id locationId") {
+  extend type Payment @key(fields: "id locationId") {
     id: ID! @external
     locationId: ID! @external
     invoice: Invoice
@@ -42,12 +36,7 @@ const typeDefs = gql`
 `;
 
 const resolvers = {
-  CardPayment: {
-    invoice(payment) {
-      return invoices.find(i => i.paymentId === payment.id);
-    }
-  },
-  CashPayment: {
+  Payment: {
     invoice(payment) {
       return invoices.find(i => i.paymentId === payment.id);
     }
