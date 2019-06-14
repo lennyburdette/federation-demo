@@ -6,8 +6,21 @@ const typeDefs = gql`
     topProducts(first: Int = 5): [Product]
   }
 
-  type Product @key(fields: "upc") {
-    upc: String!
+  interface Product @key(fields: "id") {
+    id: ID!
+    name: String
+    price: Int
+  }
+
+  type Book implements Product @key(fields: "id") {
+    id: ID!
+    name: String
+    price: Int
+    pages: Int
+  }
+
+  type Furniture implements Product @key(fields: "id") {
+    id: ID!
     name: String
     price: Int
     weight: Int
@@ -17,9 +30,26 @@ const typeDefs = gql`
 const resolvers = {
   Product: {
     __resolveReference(object) {
-      return products.find(product => product.upc === object.upc);
+      return products.find(product => product.id === object.id);
+    },
+    __resolveType(object) {
+      return object.pages ? 'Book' : 'Furniture'
     }
   },
+
+  // Duplicating the reference resolvers is unfortunate, but representations
+  // will always use a concrete type in the __typename field.
+  Book: {
+    __resolveReference(object) {
+      return products.find(product => product.id === object.id);
+    },
+  },
+  Furniture: {
+    __resolveReference(object) {
+      return products.find(product => product.id === object.id);
+    },
+  },
+
   Query: {
     topProducts(_, args) {
       return products.slice(0, args.first);
@@ -42,21 +72,33 @@ server.listen({ port: 4003 }).then(({ url }) => {
 
 const products = [
   {
-    upc: "1",
+    id: "1",
     name: "Table",
     price: 899,
     weight: 100
   },
   {
-    upc: "2",
+    id: "2",
     name: "Couch",
     price: 1299,
     weight: 1000
   },
   {
-    upc: "3",
+    id: "3",
     name: "Chair",
     price: 54,
+    weight: 50
+  },
+  {
+    id: "4",
+    name: "1984",
+    price: 899,
+    pages: 150
+  },
+  {
+    id: "5",
+    name: "Animal Farm",
+    price: 1299,
     weight: 50
   }
 ];

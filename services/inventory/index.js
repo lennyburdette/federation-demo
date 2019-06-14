@@ -2,21 +2,38 @@ const { ApolloServer, gql } = require("apollo-server");
 const { buildFederatedSchema } = require("@apollo/federation");
 
 const typeDefs = gql`
-  extend type Product @key(fields: "upc") {
-    upc: String! @external
-    weight: Int @external
+  extend interface Product {
+    inStock: Boolean
+  }
+
+  extend type Book implements Product @key(fields: "id") {
+    id: ID! @external
+    inStock: Boolean
+  }
+
+  extend type Furniture implements Product @key(fields: "id") {
+    id: ID! @external
     price: Int @external
+    weight: Int @external
     inStock: Boolean
     shippingEstimate: Int @requires(fields: "price weight")
   }
 `;
 
 const resolvers = {
-  Product: {
+  Book: {
     __resolveReference(object) {
       return {
         ...object,
-        ...inventory.find(product => product.upc === object.upc)
+        ...inventory.find(product => product.id === object.id)
+      };
+    }
+  },
+  Furniture: {
+    __resolveReference(object) {
+      return {
+        ...object,
+        ...inventory.find(product => product.id === object.id)
       };
     },
     shippingEstimate(object) {
@@ -42,7 +59,9 @@ server.listen({ port: 4004 }).then(({ url }) => {
 });
 
 const inventory = [
-  { upc: "1", inStock: true },
-  { upc: "2", inStock: false },
-  { upc: "3", inStock: true }
+  { id: "1", inStock: true },
+  { id: "2", inStock: false },
+  { id: "3", inStock: true },
+  { id: "4", inStock: true },
+  { id: "5", inStock: false }
 ];
