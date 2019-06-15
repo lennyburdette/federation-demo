@@ -28,9 +28,8 @@ const typeDefs = gql`
     invoiceSettings: InvoiceSettings
   }
 
-  extend type Payment @key(fields: "id locationId") {
+  extend type Payment @key(fields: "id") {
     id: ID! @external
-    locationId: ID! @external
     invoice: Invoice
   }
 `;

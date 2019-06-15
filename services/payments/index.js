@@ -7,7 +7,7 @@ const { port } = config.services.find(s => s.name === pkg.name);
 
 const typeDefs = gql`
   extend type Query {
-    payment(id: ID!, locationId: ID!): Payment
+    payment(id: ID!): Payment
   }
 
   type Money {
@@ -28,9 +28,9 @@ const typeDefs = gql`
     DECLINED
   }
 
-  type Payment @key(fields: "id locationId") {
+  type Payment @key(fields: "id") {
     id: ID!
-    locationId: ID!
+    location: Location!
     createdAt: String!
     total: Money!
     status: CardPaymentStatus!
@@ -45,13 +45,16 @@ const typeDefs = gql`
 
 const resolvers = {
   Query: {
-    payment(_, { id, locationId }) {
+    payment(_, { id }) {
       return payments.find(p => p.id === id);
     }
   },
   Payment: {
     __resolveReference(object) {
       return payments.find(p => p.id === object.id);
+    },
+    location(payment) {
+      return { id: payment.locationId };
     }
   },
   Location: {

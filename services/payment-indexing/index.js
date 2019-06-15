@@ -9,17 +9,19 @@ const typeDefs = gql`
   input PaymentFilter {
     minCents: Int
     maxCents: Int
+    status: String # CardPaymentStatus
   }
 
   extend type Merchant @key(fields: "id") {
     id: ID! @external
-    payments(filter: PaymentFilter): [Payment!]!
+    payments(filter: PaymentFilter): [Payment!]! # @provides(fields: "status total")
   }
 
-  extend type Payment @key(fields: "id locationId") {
+  extend type Payment @key(fields: "id") {
     id: ID! @external
-    locationId: ID! @external
     merchant: Merchant
+    # status: CardPaymentStatus
+    # total: Money
   }
 `;
 
@@ -35,6 +37,9 @@ const resolvers = {
     },
     merchant(payment) {
       return { __typename: 'Merchant', id: payment.merchantId }
+    },
+    total(payment) {
+      return { __typename: 'Money', amount: payment.amountCents, currencyCode: 'USD' };
     }
   }
 };
@@ -52,11 +57,12 @@ server.listen({ port }).then(({ url }) => {
   console.log(`🚀 Server ready at ${url}`);
 });
 
-function filterPayments({ merchantId, minCents, maxCents }) {
+function filterPayments({ merchantId, minCents, maxCents, status }) {
   const filters = [
     merchantId && (p => p.merchantId === merchantId),
     minCents && (p => p.amountCents >= minCents),
-    maxCents && (p => p.amountCents <= maxCents)
+    maxCents && (p => p.amountCents <= maxCents),
+    status && (p => p.status === status)
   ].filter(Boolean);
 
   return payments.filter(p => filters.reduce((found, fn) => fn(p) && found, true));
@@ -65,26 +71,26 @@ function filterPayments({ merchantId, minCents, maxCents }) {
 const payments = [
   {
     id: "p1",
-    locationId: "1a",
     merchantId: "1",
-    amountCents: 123
+    amountCents: 123,
+    status: 'CAPTURED'
   },
   {
     id: "p2",
-    locationId: "1a",
     merchantId: "1",
-    amountCents: 599
+    amountCents: 599,
+    status: 'PENDING'
   },
   {
     id: "p3",
-    locationId: "2a",
     merchantId: "2",
-    amountCents: 234
+    amountCents: 234,
+    status: 'CAPTURED'
   },
   {
     id: "p4",
-    locationId: "2a",
     merchantId: "2",
-    amountCents: 345
+    amountCents: 345,
+    status: 'PENDING'
   }
 ];

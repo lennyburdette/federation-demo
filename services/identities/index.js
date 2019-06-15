@@ -14,7 +14,7 @@ const typeDefs = gql`
   type Merchant @key(fields: "id") {
     id: ID!
     name: String!
-    locations(limit: Int, cursor: String): LocationConnection!
+    locations: [Location!]!
   }
 
   type Location @key(fields: "id") {
@@ -27,17 +27,6 @@ const typeDefs = gql`
     id: ID!
     name: String!
     merchants: [Merchant!]!
-  }
-
-  type LocationConnection {
-    nodes: [Location!]!
-    cursor: String
-  }
-
-  extend type Payment @key(fields: "id locationId") {
-    id: ID! @external
-    locationId: ID! @external
-    location: Location
   }
 `;
 
@@ -55,9 +44,7 @@ const resolvers = {
       return merchants.find(m => m.id === id);
     },
     locations(merchant) {
-      return {
-        nodes: locations.filter(l => l.merchantId === merchant.id)
-      };
+      return locations.filter(l => l.merchantId === merchant.id);
     }
   },
   Location: {
@@ -76,11 +63,6 @@ const resolvers = {
       return platformToMerchantIds.get(platformAccount.id).map(merchantId =>
         ({ __typename: 'Merchant', id: merchantId })
       );
-    }
-  },
-  Payment: {
-    location(payment) {
-      return locations.find(l => l.id === payment.locationId);
     }
   }
 };
