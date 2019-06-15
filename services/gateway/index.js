@@ -40,6 +40,9 @@ async function loadWithRetries(count = 0) {
     executor,
     context: ({ req }) => {
       return { authorization: req.headers.authorization };
+    },
+    engine: {
+      apiKey: "service:composition-demo:n4yLd2vuhwY9O7nnyikT-w"
     }
   });
 

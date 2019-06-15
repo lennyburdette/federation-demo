@@ -4,6 +4,7 @@
     { "name": "identities", "port": 4011 },
     { "name": "payment-indexing", "port": 4012 },
     { "name": "secrets", "port": 4013 },
-    { "name": "invoices", "port": 4014 }
+    { "name": "invoices", "port": 4014 },
+    { "name": "capital", "port": 4015 }
   ]
 }

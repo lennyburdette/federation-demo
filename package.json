@@ -5,12 +5,13 @@
     "services/*"
   ],
   "scripts": {
-    "start-gateway": "nodemon services/gateway/index.js",
+    "start-gateway": "export ENGINE_API_KEY=service:composition-demo:n4yLd2vuhwY9O7nnyikT-w && nodemon services/gateway/index.js",
     "start-service-payments": "nodemon services/payments/index.js",
     "start-service-identities": "nodemon services/identities/index.js",
     "start-service-payment-indexing": "nodemon services/payment-indexing/index.js",
     "start-service-secrets": "nodemon services/secrets/index.js",
     "start-service-invoices": "nodemon services/invoices/index.js",
+    "start-service-capital": "nodemon services/capital/index.js",
     "start-services": "concurrently \"npm:start-service-*\""
   },
   "devDependencies": {
